@@ -85,10 +85,31 @@ module ActiveAdmin
 
       def build_table_cell(col, item)
         td(:class =>  col.html_class) do
-          rvalue = call_method_or_proc_on(item, col.data, :exec => false)
-          if col.data.is_a?(Symbol)
-            rvalue = pretty_format(rvalue)
+          rvalue = nil
+          begin
+            rvalue = call_method_or_proc_on(item, col.data, :exec => false)
+            if col.data.is_a?(Symbol)
+              rvalue = pretty_format(rvalue)
+            end
+          rescue => e
+            if ActiveAdmin.application.ignore_undefined_method_for_nil
+              rvalue = div(:class => 'table-cell-exception') do
+                lines = []
+                e.backtrace.each_with_index {|line, i| lines << i if line.start_with?(Rails.root.to_s) }
+                trace = lines.present? ? e.backtrace[lines.min .. lines.max] : e.backtrace
+                span(:class => 'exception-icon', 'data-label' => "Error")
+                div(:class => 'exception-message') { e.message }
+                div(:class => 'exception-trace') do
+                  trace.map do |l|
+                    l.start_with?(Rails.root.to_s) ? "<strong>#{CGI::escapeHTML(l)}</strong>" : CGI::escapeHTML(l)
+                  end.join("<br/>").html_safe
+                end
+              end
+            else
+              raise e
+            end
           end
+
           rvalue
         end
       end
