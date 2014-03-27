@@ -1,8 +1,8 @@
 module ActiveAdmin
   class Comment < ActiveRecord::Base
 
-    belongs_to :resource, :polymorphic => true
-    belongs_to :author,   :polymorphic => true
+    belongs_to :resource, polymorphic: true
+    belongs_to :author,   polymorphic: true
 
     unless Rails::VERSION::MAJOR > 3 && !defined? ProtectedAttributes
       attr_accessible :resource, :resource_id, :resource_type, :body, :namespace
@@ -14,8 +14,11 @@ module ActiveAdmin
 
     # @returns [String] The name of the record to use for the polymorphic relationship
     def self.resource_type(resource)
-      record = resource.respond_to?(:decorated?) && resource.decorated? ? resource.model : resource
-      record.class.name.to_s
+      undecorate_resource(resource).class.name.to_s
+    end
+
+    def self.undecorate_resource(resource)
+      ActiveAdmin::ResourceController::Decorators.undecorate_resource(resource)
     end
 
     # Postgres adapters won't compare strings to numbers (issue 34)
@@ -24,9 +27,9 @@ module ActiveAdmin
     end
 
     def self.find_for_resource_in_namespace(resource, namespace)
-      where :resource_type => resource_type(resource),
-            :resource_id   => resource_id_cast(resource),
-            :namespace     => namespace.to_s
+      where resource_type: resource_type(resource),
+            resource_id:   resource_id_cast(resource),
+            namespace:     namespace.to_s
     end
 
     def self.resource_id_type

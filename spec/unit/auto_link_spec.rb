@@ -4,10 +4,11 @@ describe "auto linking resources" do
   include ActiveAdmin::ViewHelpers::ActiveAdminApplicationHelper
   include ActiveAdmin::ViewHelpers::AutoLinkHelper
   include ActiveAdmin::ViewHelpers::DisplayHelper
+  include MethodOrProcHelper
 
   let(:active_admin_config)   { double namespace: namespace }
   let(:active_admin_namespace){ ActiveAdmin::Namespace.new(ActiveAdmin::Application.new, :admin) }
-  let(:post){ Post.create! :title => "Hello World" }
+  let(:post){ Post.create! title: "Hello World" }
 
   def admin_post_path(post)
     "/admin/posts/#{post.id}"

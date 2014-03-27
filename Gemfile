@@ -14,6 +14,8 @@ gem 'arbre', github: 'gregbell/arbre' # until gregbell/arbre#16 makes it into an
 gem 'rake', require: false
 gem 'rails-i18n' # Provides default i18n for many languages
 
+gem 'sprockets', '<= 2.11.0' # Hold back sprockets, ref: #3005
+
 group :development do
   # Debugging
   gem 'better_errors'      # Web UI to debug exceptions. Go to /__better_errors to access the latest one
@@ -30,7 +32,9 @@ group :development do
 end
 
 group :test do
+  gem 'draper'
   gem 'cancan'
+  gem 'pundit'
   gem 'capybara', '= 1.1.2'
   gem 'simplecov', require: false # Test coverage generator. Go to /coverage/ after running tests
   gem 'coveralls', require: false # Test coverage website. Go to https://coveralls.io

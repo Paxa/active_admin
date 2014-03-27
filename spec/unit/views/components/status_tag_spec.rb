@@ -6,7 +6,7 @@ describe ActiveAdmin::Views::StatusTag do
 
     # Helper method to build StatusTag objects in an Arbre context
     def status_tag(*args)
-      render_arbre_component(:status_tag_args => args) do
+      render_arbre_component(status_tag_args: args) do
         status_tag(*assigns[:status_tag_args])
       end
     end
@@ -46,12 +46,19 @@ describe ActiveAdmin::Views::StatusTag do
       its(:class_list)  { should include('status_tag') }
       its(:content)     { should eq '' }
     end
+    
+    context "when status is false" do
+      subject { status_tag('false') }
+
+      its(:class_list)  { should include('status_tag') }
+      its(:content)     { should == 'No' }
+    end
 
     context "when status is nil" do
       subject { status_tag(nil) }
 
       its(:class_list)  { should include('status_tag') }
-      its(:content)     { should eq '' }
+      its(:content)     { should == 'No' }
     end
 
     context "when status is 'Active' and type is :ok" do
@@ -63,7 +70,7 @@ describe ActiveAdmin::Views::StatusTag do
     end
 
     context "when status is 'Active' and class is 'ok'" do
-      subject { status_tag('Active', :class => 'ok') }
+      subject { status_tag('Active', class: 'ok') }
 
       its(:class_list)  { should include('status_tag') }
       its(:class_list)  { should include('active') }
@@ -71,7 +78,7 @@ describe ActiveAdmin::Views::StatusTag do
     end
 
     context "when status is 'Active' and label is 'on'" do
-      subject { status_tag('Active', :label => 'on') }
+      subject { status_tag('Active', label: 'on') }
 
       its(:content)     { should eq 'on' }
       its(:class_list)  { should include('status_tag') }
@@ -80,7 +87,7 @@ describe ActiveAdmin::Views::StatusTag do
     end
 
     context "when status is 'So useless', type is :ok, class is 'woot awesome' and id is 'useless'" do
-      subject { status_tag('So useless', :ok, :class => 'woot awesome', :id => 'useless') }
+      subject { status_tag('So useless', :ok, class: 'woot awesome', id: 'useless') }
 
       its(:content)     { should eq 'So Useless' }
       its(:class_list)  { should include('status_tag') }

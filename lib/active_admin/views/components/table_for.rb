@@ -115,17 +115,28 @@ module ActiveAdmin
           item[data]
         end
         value = pretty_format(value) if data.is_a?(Symbol)
+        value = status_tag value     if is_boolean? data, item
         value
+      end
+
+      def is_boolean?(data, item)
+        if item.respond_to? :column_for_attribute
+          attr = item.column_for_attribute(data) and attr.type == :boolean 
+        end
       end
 
       # Returns an array for the current sort order
       #   current_sort[0] #=> sort_key
       #   current_sort[1] #=> asc | desc
       def current_sort
-        @current_sort ||= if params[:order] =~ /^([\w\_\.]+)_(desc|asc)$/
-          [$1,$2]
-        else
-          []
+        @current_sort ||= begin
+          order_clause = OrderClause.new params[:order]
+          
+          if order_clause.valid?
+            [order_clause.field, order_clause.order]
+          else
+            []
+          end
         end
       end
 
@@ -141,7 +152,7 @@ module ActiveAdmin
 
       def default_options
         {
-          :i18n => @resource_class
+          i18n: @resource_class
         }
       end
 
@@ -186,13 +197,13 @@ module ActiveAdmin
         #
         # You can set the sort key by passing a string or symbol
         # to the sortable option:
-        #   column :username, :sortable => 'other_column_to_sort_on'
+        #   column :username, sortable: 'other_column_to_sort_on'
         #
         # If you pass a block to be rendered for this column, the column
         # will not be sortable unless you pass a string to sortable to
         # sort the column on:
         #
-        #   column('Username', :sortable => 'login'){ @user.pretty_name }
+        #   column('Username', sortable: 'login'){ @user.pretty_name }
         #   # => Sort key will be 'login'
         #
         def sort_key

@@ -113,6 +113,15 @@ module ActiveAdmin
     # end
     # ```
     #
+    # It's also possible to sort by PostgreSQL's hstore column key. You should set `sortable`
+    # option to a `column->'key'` value:
+    #
+    # ```ruby
+    # index do
+    #   column :keywords, sortable: "meta->'keywords'"
+    # end
+    # ```
+    #
     # ## Associated Sorting
     #
     # You're normally able to sort columns alphabetically, but by default you
@@ -154,11 +163,11 @@ module ActiveAdmin
 
       def build(page_presenter, collection)
         table_options = {
-          :id => "index_table_#{active_admin_config.resource_name.plural}",
-          :sortable => true,
-          :class => "index_table index",
-          :i18n => active_admin_config.resource_class,
-          :paginator => page_presenter[:paginator] != false
+          id: "index_table_#{active_admin_config.resource_name.plural}",
+          sortable: true,
+          class: "index_table index",
+          i18n: active_admin_config.resource_class,
+          paginator: page_presenter[:paginator] != false
         }
 
         table_for collection, table_options do |t|
@@ -202,8 +211,12 @@ module ActiveAdmin
 
         # Display a column for the id
         def id_column
-          column(resource_class.human_attribute_name(resource_class.primary_key), :sortable => resource_class.primary_key) do |resource|
-            link_to resource.id, resource_path(resource), :class => "resource_id_link"
+          column(resource_class.human_attribute_name(resource_class.primary_key), sortable: resource_class.primary_key) do |resource|
+            if controller.action_methods.include?('show')
+              link_to resource.id, resource_path(resource), class: "resource_id_link"
+            else
+              resource.id
+            end
           end
         end
 
@@ -212,6 +225,9 @@ module ActiveAdmin
         # ```ruby
         # # Add default links.
         # actions
+        #
+        # # Add default links with a custom column title (empty by default).
+        # actions name: 'A title!'
         #
         # # Append some actions onto the end of the default actions.
         # actions do |admin_user|
@@ -225,12 +241,9 @@ module ActiveAdmin
         # ```
         #
         def actions(options = {}, &block)
-          options = {
-            :name => "",
-            :defaults => true
-          }.merge(options)
-          column options[:name] do |resource|
-            text_node default_actions(resource) if options[:defaults]
+          show_default_links = options.delete(:defaults) { true }
+          column options.delete(:name), options do |resource|
+            text_node default_actions(resource) if show_default_links
             text_node instance_exec(resource, &block) if block_given?
           end
         end
@@ -239,13 +252,13 @@ module ActiveAdmin
           links = proc do |resource|
             links = ''.html_safe
             if controller.action_methods.include?('show') && authorized?(ActiveAdmin::Auth::READ, resource)
-              links << link_to(I18n.t('active_admin.view'), resource_path(resource), :class => "member_link view_link")
+              links << link_to(I18n.t('active_admin.view'), resource_path(resource), class: "member_link view_link")
             end
             if controller.action_methods.include?('edit') && authorized?(ActiveAdmin::Auth::UPDATE, resource)
-              links << link_to(I18n.t('active_admin.edit'), edit_resource_path(resource), :class => "member_link edit_link")
+              links << link_to(I18n.t('active_admin.edit'), edit_resource_path(resource), class: "member_link edit_link")
             end
             if controller.action_methods.include?('destroy') && authorized?(ActiveAdmin::Auth::DESTROY, resource)
-              links << link_to(I18n.t('active_admin.delete'), resource_path(resource), :method => :delete, :data => {:confirm => I18n.t('active_admin.delete_confirmation')}, :class => "member_link delete_link")
+              links << link_to(I18n.t('active_admin.delete'), resource_path(resource), method: :delete, data: {confirm: I18n.t('active_admin.delete_confirmation')}, class: "member_link delete_link")
             end
             links
           end
