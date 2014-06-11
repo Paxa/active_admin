@@ -1,3 +1,5 @@
+ActiveAdmin::Dependency.pundit!
+
 require 'pundit'
 
 module ActiveAdmin
@@ -5,10 +7,10 @@ module ActiveAdmin
   class PunditAdapter < AuthorizationAdapter
 
     def authorized?(action, subject = nil)
-      policy = retreive_policy(subject)
+      policy = retrieve_policy(subject)
       action = format_action(action, subject)
 
-      policy.class.method_defined?(action) && policy.send(action)
+      policy.class.method_defined?(action) && policy.public_send(action)
     end
 
     def scope_collection(collection, action = Auth::READ)
@@ -17,8 +19,7 @@ module ActiveAdmin
       Pundit.policy_scope!(user, collection)
     end
 
-
-    def retreive_policy(subject)
+    def retrieve_policy(subject)
       case subject
       when nil   then Pundit.policy!(user, resource)
       when Class then Pundit.policy!(user, subject.new)
