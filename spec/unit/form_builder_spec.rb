@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe ActiveAdmin::FormBuilder do
 
@@ -383,7 +383,7 @@ describe ActiveAdmin::FormBuilder do
       context "with an existing post" do
         let :body do
           build_form({url: '/categories'}, Category.new) do |f|
-            f.object.posts.build.stub(:new_record? => false)
+            allow(f.object.posts.build).to receive(:new_record?).and_return(false)
             f.has_many :posts, allow_destroy: true do |p|
               p.input :title
             end
@@ -530,7 +530,7 @@ describe ActiveAdmin::FormBuilder do
       end
     end
 
-    pending "should render the block if it returns nil" do
+    skip "should render the block if it returns nil" do
       body = build_form({url: '/categories'}, Category.new) do |f|
         f.object.posts.build
         f.has_many :posts do |p|
